@@ -17,4 +17,5 @@ app.use(express.json())
 app.use(express.urlencoded({extended:true}))
 
 app.use("/auth",CompositionRoot.authRouter())
+app.use("/restaurants",CompositionRoot.restaurantRouter())
 app.listen(port,()=>console.log('listening to port '+ port))
