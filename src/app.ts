@@ -9,7 +9,7 @@ const port = process.env.PORT
 console.log(port)
 const app = express()
 app.use(cors({
-    origin: ["http://localhost:8205", "http://127.0.0.1:8205"],
+    origin: ["http://localhost:8215", "http://127.0.0.1:8215"],
     credentials: true,
 }));
 

@@ -19,6 +19,14 @@ export default class RestaurantRouter{
         router.post('/add',
         (req,res,next)=>tokenValidator.validate(req,res,next),
         (req,res)=>controller.add(req,res))
+
+        router.post('/placeOrder',
+        (req,res,next)=>tokenValidator.validate(req,res,next),
+        (req,res)=>controller.order(req,res))
+
+        router.get('/findOrder',
+        (req,res,next)=>tokenValidator.validate(req,res,next),
+        (req,res)=>controller.findOrder(req,res))
         return router
     }
 }
