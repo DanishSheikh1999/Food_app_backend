@@ -9,6 +9,8 @@ import RedisTokenStore from "./auth/data/services/redis_tokenStore"
 import TokenValidator from "./auth/helper/TokenValidator"
 import RestaurantRepo from "./restaurant/data/repository/RestaurantRepo"
 import RestaurantRouter from "./restaurant/entrypoint/RestaurantRouter"
+import CartRepo from "./cart/data/repository/CartRepo"
+import CartRouter from "./cart/entrypoint/CartRouter"
 dotenv.config()
 export default class CompositionRoot{
     public static client :mongoose.Mongoose
@@ -39,5 +41,14 @@ export default class CompositionRoot{
         const tokenValidator = new TokenValidator(tokenService,tokenStore)
         return RestaurantRouter.configure(tokenValidator,repo)
 
+
+    }
+
+    public static cartRouter(){
+        const repo = new CartRepo(this.client)
+        const tokenService = new JwtTokenService(process.env.PRIVATE_KEY as string)
+        const tokenStore = new RedisTokenStore(this.redisClient)
+        const tokenValidator = new TokenValidator(tokenService,tokenStore)
+        return CartRouter.configure(tokenValidator,tokenService,repo)
     }
 }

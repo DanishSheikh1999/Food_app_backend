@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "ts-node ./src/app.ts",
     "faker": "ts-node ./test/restaurant/data/helpers/faker.ts",
-    "test": "mocha --require ts-node/register --watch-extensions ts 'test/restaurant/entrypoints/*.ts' --timeout 5000"
+    "test": "mocha --require ts-node/register --watch-extensions ts 'test/cart/data/Repository/*.ts' --timeout 5000"
   },
   "author": "",
   "license": "ISC",

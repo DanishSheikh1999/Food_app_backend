@@ -9,7 +9,7 @@ const port = process.env.PORT
 console.log(port)
 const app = express()
 app.use(cors({
-    origin: ["http://localhost:8200", "http://127.0.0.1:8200"],
+    origin: ["http://localhost:8205", "http://127.0.0.1:8205"],
     credentials: true,
 }));
 
@@ -18,4 +18,5 @@ app.use(express.urlencoded({extended:true}))
 
 app.use("/auth",CompositionRoot.authRouter())
 app.use("/restaurants",CompositionRoot.restaurantRouter())
+app.use("/cart",CompositionRoot.cartRouter())
 app.listen(port,()=>console.log('listening to port '+ port))

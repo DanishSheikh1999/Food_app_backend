@@ -3,6 +3,7 @@ import SignInUseCase from "../usecases/signin_usecase";
 import * as express from "express";
 import SignUpUseCase from "../usecases/signup_usercase";
 import SignOutUseCase from "../usecases/signout_usecase";
+import User from "../domain/user";
 export default class AuthController {
   _header = { "Content-Type":"application/json","Access-Control-Allow-Origin": "*"}
   constructor(
@@ -18,8 +19,8 @@ export default class AuthController {
       console.log(req.body);
       return await this.signInUseCase
         .execute(email, name, auth_type, password)
-        .then((id: string) =>
-          res.status(200).header(this._header).json({ authToken: this.tokenService.encode(id) })
+        .then((user:User) =>
+          res.status(200).header(this._header).json({ authToken: this.tokenService.encode(user.id),name:user.name,email:user.email })
         )
         .catch((err: Error) => res.status(404).header(this._header).json({ error: err }));
     } catch (err) {
@@ -32,8 +33,8 @@ export default class AuthController {
       
       return await this.signUpUseCase
         .execute(email, password, auth_type, name)
-        .then((id: string) =>
-          res.status(200).json({ authToken: this.tokenService.encode(id) })
+        .then((user:User) =>
+          res.status(200).header(this._header).json({ authToken: this.tokenService.encode(user.id),name:user.name,email:user.email })
         )
         .catch((err: Error) => res.status(404).header(this._header).json({ error: err}));
     } catch (err) {
