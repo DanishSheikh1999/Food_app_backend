@@ -28,6 +28,7 @@ const pointSchema = new mongoose.Schema({
     ,required:true
     }
 })
+
 const RestaurantSchema = new mongoose.Schema({
     name:{type:String,required:true,index:true},
     type:{type:String,required:true},
