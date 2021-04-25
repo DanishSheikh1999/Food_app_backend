@@ -2,7 +2,7 @@ import * as express from "express";
 import ITokenServive from "../../auth/services/ITokenService";
 import ICartRepo from "../data/repository/ICartRepo";
 import CartItem from "../domain/Cart";
-import Item from "../domain/Item";
+import Item, { Location } from "../domain/Item";
 
 export default class CartController {
   constructor(
@@ -39,14 +39,29 @@ export default class CartController {
   public async order(req: express.Request,res: express.Response){
     const tokenId = req.headers.authorization!
     const userId = this.tokenSerice.getUserId(tokenId)
+    const {longitude,latitude}  = req.body as {longitude: number,latitude : number}
+    console.log(longitude)
     try{
-          await this.repository.order(userId)
+          await this.repository.order(userId,new Location(longitude,latitude))
           .then((data)=>res.status(200).json({message:data}))
           .catch((err)=>res.status(404).json({error: err}))
     }catch (err){
         res.status(400).json({error: err})
     }
 }
+public async cancelOrder(req: express.Request,res: express.Response){
+  const tokenId = req.headers.authorization!;
+  const userId = this.tokenSerice.getUserId(tokenId)
+  try {
+    await this.repository
+      .cancelOrder(userId)
+      .then((data) => res.status(200).json({ message: data }))
+      .catch((err:any)=>res.status(404).json({error:err}))
+  } catch (err:any) {
+      res.status(400).json({error: err})
+  }
+}
+
 
 public async findOrder(req: express.Request, res: express.Response) {
   const tokenId = req.headers.authorization!;

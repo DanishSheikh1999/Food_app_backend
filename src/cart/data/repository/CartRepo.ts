@@ -1,5 +1,5 @@
 import CartItem from "../../domain/Cart";
-import Item from "../../domain/Item";
+import Item, { Location } from "../../domain/Item";
 import ICartRepo from "./ICartRepo";
 import mongoose from "mongoose";
 import { ItemDocument, ItemModel, ItemSchema } from "../userModels/itemModel";
@@ -20,10 +20,15 @@ import {
 } from "../userModels/orderModel";
 export default class CartRepo implements ICartRepo {
   constructor(public client: mongoose.Mongoose) {}
-  async order(userId: string): Promise<string> {
+   async cancelOrder(userId: string): Promise<string> {
+    const model = this.client.model<OrderDocument>("Order",OrderSchema) as OrderModel
+    await model.findOneAndRemove({userId:userId}).catch((err:any)=> {return Promise.reject(err)});
+    return "Order Canceled"
+  }
+  async order(userId: string, location: Location): Promise<string> {
     let data = await this.find(userId).catch((_) => null);
 
-    return await this._placeOrder(data, userId);
+    return await this._placeOrder(data, userId, location);
   }
   async find(userId: string): Promise<Array<CartItem>> {
     const model = this.client.model<ItemDocument>(
@@ -90,7 +95,7 @@ export default class CartRepo implements ICartRepo {
       OrderSchema
     ) as OrderModel;
 
-    const order= await model.findOne({ userId: userId });
+    const order = await model.findOne({ userId: userId });
     if (!order) return Promise.reject("No orders");
     return await this.parseOrder(order);
   }
@@ -142,10 +147,26 @@ export default class CartRepo implements ICartRepo {
     }
     return menuItems;
   }
-  async _placeOrder(data: CartItem[] | null, userId: string): Promise<string> {
+  async _placeOrder(
+    data: CartItem[] | null,
+    userId: string,
+    location: Location
+  ): Promise<string> {
+    const orderModel = this.client.model<OrderDocument>(
+      "Order",
+      OrderSchema
+    ) as OrderModel;
+
+    const val = await orderModel.findOne({userId:userId})
+    if(val){
+      return Promise.reject("Order Already Placed");
+    }
+
     if (data == null) {
       return Promise.reject("The cart is empty");
     }
+
+
 
     const model = this.client.model<ItemDocument>(
       "Cart",
@@ -154,7 +175,9 @@ export default class CartRepo implements ICartRepo {
 
     const cart = (await model.findOne({ userId: userId })) as ItemDocument;
 
-    await model.findOneAndRemove({userId:userId}).catch((_:any)=>Promise.reject("Error in server"))
+    await model
+      .findOneAndRemove({ userId: userId })
+      .catch((_: any) => Promise.reject("Error in server"));
     let totalPrice = 0;
     data.forEach(
       (value) => (totalPrice += value.menuItem.unitPrice * value.quantity)
@@ -164,22 +187,26 @@ export default class CartRepo implements ICartRepo {
       "Menu",
       MenuSchema
     ) as MenuModel;
-    console.log(data[0].menuItem.menuId)
+    console.log(data[0].menuItem.menuId);
     const menu = (await menuModel.findOne({
       _id: data[0].menuItem.menuId,
     })) as MenuDocument;
-    
+
     const restaurant_id = menu.restaurantId;
 
-    console.log(restaurant_id)
-    const orderModel = this.client.model<OrderDocument>(
-      "Order",
-      OrderSchema
-    ) as OrderModel;
+    console.log(restaurant_id);
+    
+   
     const new_order = new orderModel({
       restaurantId: restaurant_id,
       userId: userId,
       totalPrice: totalPrice,
+      location: {
+        coordinates: {
+          longitude: location.longitude,
+          latitude: location.latitude,
+        },
+      },
       items: cart.addedItems,
     });
     await new_order.save();
